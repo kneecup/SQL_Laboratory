@@ -4,24 +4,28 @@ project(DatabaseGUI)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find wxWidgets
+set(wxWidgets_ROOT_DIR "C:/wxWidgets")
+set(wxWidgets_CONFIGURATION mswu)
+
 find_package(wxWidgets REQUIRED COMPONENTS core base)
+
 include(${wxWidgets_USE_FILE})
 
-# Find SQLite3
-find_package(SQLite3 REQUIRED)
+include_directories(include ${wxWidgets_INCLUDE_DIRS})
 
-# Executable
-add_executable(DatabaseGUI
-    src/App.cpp
-    src/MainFrame.cpp
-    src/DatabaseManager.cpp
-    src/Person.cpp
-    src/DatabaseEntity.cpp
-)
+file(GLOB SOURCES "src/*.cpp")
 
-target_include_directories(DatabaseGUI PRIVATE include)
-target_link_libraries(DatabaseGUI 
-    ${wxWidgets_LIBRARIES}
-    SQLite::SQLite3
-)
+add_executable(DatabaseGUI ${SOURCES})
+
+target_link_libraries(DatabaseGUI ${wxWidgets_LIBRARIES})
+
+add_definitions(-D__WXMSW__ -D__GNUWIN32__ -D_UNICODE)
+
+set(wxWidgets_DLL_DIR "${wxWidgets_ROOT_DIR}/lib/gcc1010_x64_dll")
+if(EXISTS ${wxWidgets_DLL_DIR})
+    add_custom_command(TARGET DatabaseGUI POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${wxWidgets_DLL_DIR}/wxbase32u_gcc1010.dll
+        ${wxWidgets_DLL_DIR}/wxmsw32u_core_gcc1010.dll
+        ${CMAKE_CURRENT_BINARY_DIR}/)
+endif()
