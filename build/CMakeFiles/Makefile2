@@ -84,12 +84,12 @@ clean: CMakeFiles/DatabaseGUI.dir/clean
 CMakeFiles/DatabaseGUI.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\DatabaseGUI.dir\build.make CMakeFiles/DatabaseGUI.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\DatabaseGUI.dir\build.make CMakeFiles/DatabaseGUI.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=C:\Users\user-\OneDrive\Documents\GitHub\SQL_Laboratory\build\CMakeFiles --progress-num=1,2,3,4,5,6 "Built target DatabaseGUI"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=C:\Users\user-\OneDrive\Documents\GitHub\SQL_Laboratory\build\CMakeFiles --progress-num=1,2,3,4,5,6,7 "Built target DatabaseGUI"
 .PHONY : CMakeFiles/DatabaseGUI.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/DatabaseGUI.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\user-\OneDrive\Documents\GitHub\SQL_Laboratory\build\CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\user-\OneDrive\Documents\GitHub\SQL_Laboratory\build\CMakeFiles 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/DatabaseGUI.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\user-\OneDrive\Documents\GitHub\SQL_Laboratory\build\CMakeFiles 0
 .PHONY : CMakeFiles/DatabaseGUI.dir/rule
@@ -101,7 +101,7 @@ DatabaseGUI: CMakeFiles/DatabaseGUI.dir/rule
 # codegen rule for target.
 CMakeFiles/DatabaseGUI.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\DatabaseGUI.dir\build.make CMakeFiles/DatabaseGUI.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=C:\Users\user-\OneDrive\Documents\GitHub\SQL_Laboratory\build\CMakeFiles --progress-num=1,2,3,4,5,6 "Finished codegen for target DatabaseGUI"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=C:\Users\user-\OneDrive\Documents\GitHub\SQL_Laboratory\build\CMakeFiles --progress-num=1,2,3,4,5,6,7 "Finished codegen for target DatabaseGUI"
 .PHONY : CMakeFiles/DatabaseGUI.dir/codegen
 
 # clean rule for target.

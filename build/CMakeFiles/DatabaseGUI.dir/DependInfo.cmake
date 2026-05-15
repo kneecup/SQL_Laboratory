@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "C:/SQLite/sqlite3.c" "CMakeFiles/DatabaseGUI.dir/C_/SQLite/sqlite3.c.obj" "gcc" "CMakeFiles/DatabaseGUI.dir/C_/SQLite/sqlite3.c.obj.d"
   "C:/Users/user-/OneDrive/Documents/GitHub/SQL_Laboratory/src/App.cpp" "CMakeFiles/DatabaseGUI.dir/src/App.cpp.obj" "gcc" "CMakeFiles/DatabaseGUI.dir/src/App.cpp.obj.d"
   "C:/Users/user-/OneDrive/Documents/GitHub/SQL_Laboratory/src/DatabaseEntity.cpp" "CMakeFiles/DatabaseGUI.dir/src/DatabaseEntity.cpp.obj" "gcc" "CMakeFiles/DatabaseGUI.dir/src/DatabaseEntity.cpp.obj.d"
   "C:/Users/user-/OneDrive/Documents/GitHub/SQL_Laboratory/src/DatabaseManager.cpp" "CMakeFiles/DatabaseGUI.dir/src/DatabaseManager.cpp.obj" "gcc" "CMakeFiles/DatabaseGUI.dir/src/DatabaseManager.cpp.obj.d"

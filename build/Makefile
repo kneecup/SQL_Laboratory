@@ -128,6 +128,30 @@ DatabaseGUI/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\DatabaseGUI.dir\build.make CMakeFiles/DatabaseGUI.dir/build
 .PHONY : DatabaseGUI/fast
 
+C_/SQLite/sqlite3.obj: C_/SQLite/sqlite3.c.obj
+.PHONY : C_/SQLite/sqlite3.obj
+
+# target to build an object file
+C_/SQLite/sqlite3.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\DatabaseGUI.dir\build.make CMakeFiles/DatabaseGUI.dir/C_/SQLite/sqlite3.c.obj
+.PHONY : C_/SQLite/sqlite3.c.obj
+
+C_/SQLite/sqlite3.i: C_/SQLite/sqlite3.c.i
+.PHONY : C_/SQLite/sqlite3.i
+
+# target to preprocess a source file
+C_/SQLite/sqlite3.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\DatabaseGUI.dir\build.make CMakeFiles/DatabaseGUI.dir/C_/SQLite/sqlite3.c.i
+.PHONY : C_/SQLite/sqlite3.c.i
+
+C_/SQLite/sqlite3.s: C_/SQLite/sqlite3.c.s
+.PHONY : C_/SQLite/sqlite3.s
+
+# target to generate assembly for a file
+C_/SQLite/sqlite3.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\DatabaseGUI.dir\build.make CMakeFiles/DatabaseGUI.dir/C_/SQLite/sqlite3.c.s
+.PHONY : C_/SQLite/sqlite3.c.s
+
 src/App.obj: src/App.cpp.obj
 .PHONY : src/App.obj
 
@@ -257,6 +281,9 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... DatabaseGUI
+	@echo ... C_/SQLite/sqlite3.obj
+	@echo ... C_/SQLite/sqlite3.i
+	@echo ... C_/SQLite/sqlite3.s
 	@echo ... src/App.obj
 	@echo ... src/App.i
 	@echo ... src/App.s

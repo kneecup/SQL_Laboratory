@@ -1,1 +1,1 @@
- C:/wxWidgets/lib/gcc810_x64_dll/libwxbase32u.a C:/wxWidgets/lib/gcc810_x64_dll/libwxmsw32u_core.a C:/SQLite/sqlite3.dll -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 
+ C:/wxWidgets/lib/gcc810_x64_dll/libwxbase32u.a C:/wxWidgets/lib/gcc810_x64_dll/libwxmsw32u_core.a -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/DatabaseGUI.dir/C_/SQLite/sqlite3.c.obj"
+  "CMakeFiles/DatabaseGUI.dir/C_/SQLite/sqlite3.c.obj.d"
   "CMakeFiles/DatabaseGUI.dir/src/App.cpp.obj"
   "CMakeFiles/DatabaseGUI.dir/src/App.cpp.obj.d"
   "CMakeFiles/DatabaseGUI.dir/src/DatabaseEntity.cpp.obj"
@@ -16,6 +18,6 @@ file(REMOVE_RECURSE
 )
 
 # Per-language clean rules from dependency scanning.
-foreach(lang CXX)
+foreach(lang C CXX)
   include(CMakeFiles/DatabaseGUI.dir/cmake_clean_${lang}.cmake OPTIONAL)
 endforeach()

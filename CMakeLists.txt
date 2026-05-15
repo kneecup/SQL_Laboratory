@@ -4,48 +4,34 @@ project(DatabaseGUI)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# ============================================
-# ПУТИ
-# ============================================
+# Пути
 set(WXWIDGETS_DIR "C:/wxWidgets")
 set(WXWIDGETS_LIB_DIR "${WXWIDGETS_DIR}/lib/gcc810_x64_dll")
 set(WXWIDGETS_SETUP_DIR "${WXWIDGETS_LIB_DIR}/mswu")
-
-# SQLite3 - ПРОВЕРЬТЕ ЭТОТ ПУТЬ!
 set(SQLITE3_DIR "C:/SQLite")
 
-# ============================================
-# ЗАГОЛОВОЧНЫЕ ФАЙЛЫ
-# ============================================
+# Заголовочные файлы
 include_directories(
     include
     ${WXWIDGETS_SETUP_DIR}
     ${WXWIDGETS_DIR}/include
-    ${SQLITE3_DIR}          # <-- Добавляем папку с sqlite3.h
+    ${SQLITE3_DIR}
 )
 
-# ============================================
-# ИСХОДНЫЕ ФАЙЛЫ
-# ============================================
+# Исходные файлы
 file(GLOB SOURCES "src/*.cpp")
+list(APPEND SOURCES "${SQLITE3_DIR}/sqlite3.c")
 
-# ============================================
-# СОЗДАНИЕ EXE
-# ============================================
+# Создание EXE
 add_executable(DatabaseGUI ${SOURCES})
 
-# ============================================
-# БИБЛИОТЕКИ ДЛЯ ЛИНКОВКИ
-# ============================================
+# Линковка библиотек
 target_link_libraries(DatabaseGUI
     ${WXWIDGETS_LIB_DIR}/libwxbase32u.a
     ${WXWIDGETS_LIB_DIR}/libwxmsw32u_core.a
-    ${SQLITE3_DIR}/sqlite3.dll
 )
 
-# ============================================
-# ОПРЕДЕЛЕНИЯ
-# ============================================
+# Определения
 add_definitions(
     -D__WXMSW__
     -D__GNUWIN32__
@@ -53,17 +39,12 @@ add_definitions(
     -DWXUSINGDLL
 )
 
-# ============================================
-# КОПИРУЕМ DLL
-# ============================================
+# Копирование DLL
 add_custom_command(TARGET DatabaseGUI POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${WXWIDGETS_LIB_DIR}/wxbase32u_gcc810.dll
         ${CMAKE_CURRENT_BINARY_DIR}/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${WXWIDGETS_LIB_DIR}/wxmsw32u_core_gcc810.dll
-        ${CMAKE_CURRENT_BINARY_DIR}/
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${SQLITE3_DIR}/sqlite3.dll
         ${CMAKE_CURRENT_BINARY_DIR}/
 )
