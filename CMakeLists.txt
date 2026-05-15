@@ -4,37 +4,48 @@ project(DatabaseGUI)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
+# ============================================
+# ПУТИ
+# ============================================
 set(WXWIDGETS_DIR "C:/wxWidgets")
 set(WXWIDGETS_LIB_DIR "${WXWIDGETS_DIR}/lib/gcc810_x64_dll")
-
-
 set(WXWIDGETS_SETUP_DIR "${WXWIDGETS_LIB_DIR}/mswu")
 
+# SQLite3 - ПРОВЕРЬТЕ ЭТОТ ПУТЬ!
 set(SQLITE3_DIR "C:/SQLite")
 
-
+# ============================================
+# ЗАГОЛОВОЧНЫЕ ФАЙЛЫ
+# ============================================
 include_directories(
     include
-    ${WXWIDGETS_SETUP_DIR}      
-    ${WXWIDGETS_DIR}/include   
-    ${SQLITE3_DIR}
+    ${WXWIDGETS_SETUP_DIR}
+    ${WXWIDGETS_DIR}/include
+    ${SQLITE3_DIR}          # <-- Добавляем папку с sqlite3.h
 )
 
-
+# ============================================
+# ИСХОДНЫЕ ФАЙЛЫ
+# ============================================
 file(GLOB SOURCES "src/*.cpp")
 
-
+# ============================================
+# СОЗДАНИЕ EXE
+# ============================================
 add_executable(DatabaseGUI ${SOURCES})
 
-
+# ============================================
+# БИБЛИОТЕКИ ДЛЯ ЛИНКОВКИ
+# ============================================
 target_link_libraries(DatabaseGUI
     ${WXWIDGETS_LIB_DIR}/libwxbase32u.a
     ${WXWIDGETS_LIB_DIR}/libwxmsw32u_core.a
     ${SQLITE3_DIR}/sqlite3.dll
 )
 
-
+# ============================================
+# ОПРЕДЕЛЕНИЯ
+# ============================================
 add_definitions(
     -D__WXMSW__
     -D__GNUWIN32__
@@ -42,7 +53,9 @@ add_definitions(
     -DWXUSINGDLL
 )
 
-
+# ============================================
+# КОПИРУЕМ DLL
+# ============================================
 add_custom_command(TARGET DatabaseGUI POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${WXWIDGETS_LIB_DIR}/wxbase32u_gcc810.dll

@@ -1,6 +1,7 @@
 #include "MainFrame.h"
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
+#include <wx/gbsizer.h>  // <-- ДОБАВИТЬ ЭТУ СТРОКУ!
 #include <sstream>
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
@@ -91,17 +92,22 @@ MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Database Manager", wxDefaul
     
     panel->SetSizer(mainSizer);
     
-    // Привязка обработчиков (downcast через лямбды)
-    btnCreateDB->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnCreateDatabase(event); });
-    btnOpenDB->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnOpenDatabase(event); });
-    btnCreate->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnAddPerson(event); });
-    btnSave->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnUpdatePerson(event); });
-    btnDelete->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnDeletePerson(event); });
-    btnRefresh->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { OnRefreshList(event); });
-    btnClear->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { ClearForm(); });
+    // ИСПРАВЛЕННЫЕ лямбда-функции (с передачей event)
+    btnCreateDB->Bind(wxEVT_BUTTON, [this](wxCommandEvent& evt) { OnCreateDatabase(evt); });
+    btnOpenDB->Bind(wxEVT_BUTTON, [this](wxCommandEvent& evt) { OnOpenDatabase(evt); });
+    btnCreate->Bind(wxEVT_BUTTON, [this](wxCommandEvent& evt) { OnAddPerson(evt); });
+    btnSave->Bind(wxEVT_BUTTON, [this](wxCommandEvent& evt) { OnUpdatePerson(evt); });
+    btnDelete->Bind(wxEVT_BUTTON, [this](wxCommandEvent& evt) { OnDeletePerson(evt); });
+    btnRefresh->Bind(wxEVT_BUTTON, [this](wxCommandEvent& evt) { OnRefreshList(evt); });
+    btnClear->Bind(wxEVT_BUTTON, [this](wxCommandEvent& evt) { OnClearForm(evt); });
     
     UpdateStatus("Ready. Please create or open a database.");
 }
+
+// Остальные методы остаются без изменений
+// (OnCreateDatabase, OnOpenDatabase, OnAddPerson, OnUpdatePerson, 
+//  OnDeletePerson, OnRefreshList, OnSelectPerson, OnClearForm,
+//  LoadDataToList, ClearForm, UpdateStatus, ShowError)
 
 MainFrame::~MainFrame() = default;
 
@@ -112,7 +118,6 @@ void MainFrame::OnCreateDatabase(wxCommandEvent& event) {
             std::string path = dialog.GetPath().ToStdString();
             dbManager->createDatabase(path);
             
-            // Создаем таблицу через Person
             Person tempPerson;
             dbManager->createTable(tempPerson);
             
@@ -150,13 +155,10 @@ void MainFrame::OnAddPerson(wxCommandEvent& event) {
         std::string email = txtEmail->GetValue().ToStdString();
         int age = std::stoi(txtAge->GetValue().ToStdString());
         
-        // Использование фабричного метода с умным указателем
         auto person = Person::create(firstName, lastName, email, age);
         
-        // Downcast: умный указатель на DatabaseEntity -> Person (через dynamic_cast)
-        // Здесь мы точно знаем, что это Person, но покажем пример upcast/downcast
-        DatabaseEntity* basePtr = person.get();  // Upcast
-        Person* personPtr = dynamic_cast<Person*>(basePtr);  // Downcast
+        DatabaseEntity* basePtr = person.get();
+        Person* personPtr = dynamic_cast<Person*>(basePtr);
         if (personPtr) {
             dbManager->insertEntity(std::move(person));
             UpdateStatus("Person added successfully");
@@ -189,7 +191,6 @@ void MainFrame::OnUpdatePerson(wxCommandEvent& event) {
         person->setEmail(txtEmail->GetValue().ToStdString());
         person->setAge(std::stoi(txtAge->GetValue().ToStdString()));
         
-        // Демонстрация перегрузки оператора []
         std::string firstNameFromOperator = (*person)[0];
         
         dbManager->updateEntity(*person);
@@ -232,12 +233,11 @@ void MainFrame::OnRefreshList(wxCommandEvent& event) {
 }
 
 void MainFrame::OnSelectPerson(wxListEvent& event) {
-    currentSelectedId = event.GetIndex() + 1;  // ID = индекс + 1
+    currentSelectedId = event.GetIndex() + 1;
     
     try {
         auto entity = dbManager->getEntityById(currentSelectedId, "persons");
         if (entity) {
-            // Downcast для доступа к специфичным методам Person
             Person* person = dynamic_cast<Person*>(entity.get());
             if (person) {
                 txtFirstName->SetValue(person->getFirstName());
@@ -245,10 +245,8 @@ void MainFrame::OnSelectPerson(wxListEvent& event) {
                 txtEmail->SetValue(person->getEmail());
                 txtAge->SetValue(std::to_string(person->getAge()));
                 
-                // Демонстрация перегрузки оператора ==
                 Person testPerson;
                 if (*person == testPerson) {
-                    // Не равно, ничего не делаем
                 }
                 
                 UpdateStatus("Selected: " + person->getFirstName() + " " + person->getLastName());
@@ -271,9 +269,7 @@ void MainFrame::LoadDataToList() {
     try {
         auto entities = dbManager->getAllEntities("persons");
         
-        // Демонстрация полиморфизма: работа с базовым классом
         for (const auto& entity : entities) {
-            // Upcast уже выполнен в getAllEntities
             Person* person = dynamic_cast<Person*>(entity.get());
             if (person) {
                 long index = listView->InsertItem(listView->GetItemCount(), std::to_string(person->getId()));
