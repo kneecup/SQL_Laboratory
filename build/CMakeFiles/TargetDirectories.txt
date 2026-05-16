@@ -1,3 +1,0 @@
-C:/Users/user-/OneDrive/Documents/GitHub/SQL_Laboratory/build/CMakeFiles/DatabaseGUI.dir
-C:/Users/user-/OneDrive/Documents/GitHub/SQL_Laboratory/build/CMakeFiles/edit_cache.dir
-C:/Users/user-/OneDrive/Documents/GitHub/SQL_Laboratory/build/CMakeFiles/rebuild_cache.dir

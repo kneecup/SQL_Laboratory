@@ -22,21 +22,21 @@ include_directories(
 file(GLOB SOURCES "src/*.cpp")
 list(APPEND SOURCES "${SQLITE3_DIR}/sqlite3.c")
 
-# Создание EXE
+# Создание исполняемого файла
 add_executable(DatabaseGUI ${SOURCES})
+
+# КЛЮЧЕВОЙ МОМЕНТ: Определения для wxWidgets
+target_compile_definitions(DatabaseGUI PRIVATE
+    __WXMSW__
+    __GNUWIN32__
+    _UNICODE
+    WXUSINGDLL          # <-- Этот флаг критически важен!
+)
 
 # Линковка библиотек
 target_link_libraries(DatabaseGUI
     ${WXWIDGETS_LIB_DIR}/libwxbase32u.a
     ${WXWIDGETS_LIB_DIR}/libwxmsw32u_core.a
-)
-
-# Определения
-add_definitions(
-    -D__WXMSW__
-    -D__GNUWIN32__
-    -D_UNICODE
-    -DWXUSINGDLL
 )
 
 # Копирование DLL
