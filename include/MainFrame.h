@@ -1,15 +1,17 @@
 #pragma once
 #include <wx/wx.h>
 #include <wx/listctrl.h>
+#include <wx/gbsizer.h>
 #include <memory>
 #include "DatabaseManager.h"
 #include "Person.h"
 
 class MainFrame : public wxFrame {
 private:
+    // Умный указатель на менеджер базы данных
     std::unique_ptr<DatabaseManager> dbManager;
     
-    // GUI элементы
+    // GUI элементы (wxWidgets сам управляет их памятью, поэтому raw-указатели допустимы)
     wxListView* listView;
     wxTextCtrl* txtFirstName;
     wxTextCtrl* txtLastName;
@@ -33,6 +35,7 @@ private:
     void OnSelectPerson(wxListEvent& event);
     void OnClearForm(wxCommandEvent& event);
     
+    // Вспомогательные методы
     void LoadDataToList();
     void ClearForm();
     void UpdateStatus(const wxString& message);
@@ -41,6 +44,4 @@ private:
 public:
     MainFrame();
     virtual ~MainFrame();
-    
-    wxDECLARE_EVENT_TABLE();
 };

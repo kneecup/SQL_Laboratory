@@ -27,16 +27,16 @@ public:
     std::string getCreatedAt() const { return createdAt; }
     void setCreatedAt(const std::string& time) { createdAt = time; }
     
-    // Перегрузка операторов
+    // Перегрузка операторов (3 оператора)
     virtual bool operator==(const DatabaseEntity& other) const;
     virtual std::string operator[](int index) const;
     virtual DatabaseEntity& operator=(const DatabaseEntity& other);
     
-    // Виртуальный деструктор для полиморфизма
+    // Виртуальный метод для строкового представления
     virtual std::string toString() const = 0;
 };
 
-// Исключения
+// Пользовательские исключения
 class DatabaseException : public std::runtime_error {
 public:
     explicit DatabaseException(const std::string& msg) : std::runtime_error(msg) {}

@@ -1,6 +1,43 @@
 #include "DatabaseManager.h"
-#include <iostream>
 #include <sstream>
+#include <ctime>
+
+// ============ Вспомогательная структура для callback ============
+struct CallbackData {
+    std::vector<std::vector<std::string>>* rows;
+    std::vector<std::string>* columns;
+};
+
+// ============ Реализация вспомогательных методов ============
+
+void DatabaseManager::executeSQL(const std::string& sql) {
+    char* errMsg = nullptr;
+    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
+    if (rc != SQLITE_OK) {
+        std::string error = errMsg ? errMsg : "Unknown error";
+        sqlite3_free(errMsg);
+        throw DatabaseException("SQL error: " + error + " | Query: " + sql);
+    }
+}
+
+int DatabaseManager::callback(void* data, int argc, char** argv, char** azColName) {
+    auto* cbData = static_cast<CallbackData*>(data);
+    
+    if (cbData->columns->empty()) {
+        for (int i = 0; i < argc; i++) {
+            cbData->columns->push_back(azColName[i] ? azColName[i] : "");
+        }
+    }
+    
+    std::vector<std::string> row;
+    for (int i = 0; i < argc; i++) {
+        row.push_back(argv[i] ? argv[i] : "NULL");
+    }
+    cbData->rows->push_back(row);
+    return 0;
+}
+
+// ============ Конструктор и деструктор ============
 
 DatabaseManager::DatabaseManager() : db(nullptr), isOpen(false) {}
 
@@ -8,43 +45,33 @@ DatabaseManager::~DatabaseManager() {
     closeDatabase();
 }
 
-void DatabaseManager::executeSQL(const std::string& sql) {
-    char* errMsg = nullptr;
-    int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    if (rc != SQLITE_OK) {
-        std::string error(errMsg);
-        sqlite3_free(errMsg);
-        throw DatabaseException("SQL Error: " + error);
-    }
-}
-
-int DatabaseManager::callback(void* data, int argc, char** argv, char** azColName) {
-    auto* rows = static_cast<std::vector<std::vector<std::string>>*>(data);
-    std::vector<std::string> row;
-    for (int i = 0; i < argc; i++) {
-        row.push_back(argv[i] ? argv[i] : "NULL");
-    }
-    rows->push_back(row);
-    return 0;
-}
+// ============ Основные операции ============
 
 void DatabaseManager::createDatabase(const std::string& path) {
     closeDatabase();
-    int rc = sqlite3_open(path.c_str(), &db);
-    if (rc) {
-        throw DatabaseException("Can't create database: " + std::string(sqlite3_errmsg(db)));
-    }
     dbPath = path;
+    
+    int rc = sqlite3_open(path.c_str(), &db);
+    if (rc != SQLITE_OK) {
+        std::string error = sqlite3_errmsg(db);
+        sqlite3_close(db);
+        db = nullptr;
+        throw DatabaseException("Failed to create database: " + error);
+    }
     isOpen = true;
 }
 
 void DatabaseManager::openDatabase(const std::string& path) {
     closeDatabase();
-    int rc = sqlite3_open(path.c_str(), &db);
-    if (rc) {
-        throw DatabaseException("Can't open database: " + std::string(sqlite3_errmsg(db)));
-    }
     dbPath = path;
+    
+    int rc = sqlite3_open(path.c_str(), &db);
+    if (rc != SQLITE_OK) {
+        std::string error = sqlite3_errmsg(db);
+        sqlite3_close(db);
+        db = nullptr;
+        throw DatabaseException("Failed to open database: " + error);
+    }
     isOpen = true;
 }
 
@@ -52,54 +79,55 @@ void DatabaseManager::closeDatabase() {
     if (db) {
         sqlite3_close(db);
         db = nullptr;
+        isOpen = false;
+        dbPath.clear();
     }
-    isOpen = false;
 }
 
+// ============ CRUD операции ============
+
 void DatabaseManager::createTable(const DatabaseEntity& entity) {
-    if (!isOpen) throw DatabaseException("No database is open");
+    if (!isOpen) throw DatabaseException("No database opened");
     
     std::stringstream sql;
-    sql << "CREATE TABLE IF NOT EXISTS " << entity.getTableName() << " (";
-    sql << "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+    sql << "CREATE TABLE IF NOT EXISTS " << entity.getTableName() << " ("
+        << "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        << "created_at TEXT DEFAULT CURRENT_TIMESTAMP";
     
-    auto fieldNames = entity.getFieldNames();
-    for (size_t i = 0; i < fieldNames.size(); i++) {
-        sql << fieldNames[i] << " TEXT";
-        if (i < fieldNames.size() - 1) sql << ", ";
+    for (const auto& field : entity.getFieldNames()) {
+        sql << ", " << field << " TEXT";
     }
-    sql << ", created_at TEXT DEFAULT CURRENT_TIMESTAMP)";
+    sql << ");";
     
     executeSQL(sql.str());
 }
 
 void DatabaseManager::insertEntity(std::unique_ptr<DatabaseEntity> entity) {
-    if (!isOpen) throw DatabaseException("No database is open");
+    if (!isOpen) throw DatabaseException("No database opened");
     
     std::stringstream sql;
     sql << "INSERT INTO " << entity->getTableName() << " (";
     
     auto fieldNames = entity->getFieldNames();
-    auto fieldValues = entity->getFieldValues();
-    
     for (size_t i = 0; i < fieldNames.size(); i++) {
+        if (i > 0) sql << ", ";
         sql << fieldNames[i];
-        if (i < fieldNames.size() - 1) sql << ", ";
     }
     sql << ") VALUES (";
     
+    auto fieldValues = entity->getFieldValues();
     for (size_t i = 0; i < fieldValues.size(); i++) {
+        if (i > 0) sql << ", ";
         sql << "'" << fieldValues[i] << "'";
-        if (i < fieldValues.size() - 1) sql << ", ";
     }
-    sql << ")";
+    sql << ");";
     
     executeSQL(sql.str());
 }
 
 void DatabaseManager::updateEntity(const DatabaseEntity& entity) {
-    if (!isOpen) throw DatabaseException("No database is open");
-    if (entity.getId() == -1) throw DatabaseException("Entity has no ID");
+    if (!isOpen) throw DatabaseException("No database opened");
+    if (entity.getId() < 0) throw DatabaseException("Invalid entity ID for update");
     
     std::stringstream sql;
     sql << "UPDATE " << entity.getTableName() << " SET ";
@@ -108,80 +136,82 @@ void DatabaseManager::updateEntity(const DatabaseEntity& entity) {
     auto fieldValues = entity.getFieldValues();
     
     for (size_t i = 0; i < fieldNames.size(); i++) {
+        if (i > 0) sql << ", ";
         sql << fieldNames[i] << " = '" << fieldValues[i] << "'";
-        if (i < fieldNames.size() - 1) sql << ", ";
     }
-    sql << " WHERE id = " << entity.getId();
+    sql << " WHERE id = " << entity.getId() << ";";
     
     executeSQL(sql.str());
 }
 
 void DatabaseManager::deleteEntity(int id, const std::string& tableName) {
-    if (!isOpen) throw DatabaseException("No database is open");
+    if (!isOpen) throw DatabaseException("No database opened");
     
     std::stringstream sql;
-    sql << "DELETE FROM " << tableName << " WHERE id = " << id;
+    sql << "DELETE FROM " << tableName << " WHERE id = " << id << ";";
     executeSQL(sql.str());
 }
 
 std::vector<std::unique_ptr<DatabaseEntity>> DatabaseManager::getAllEntities(const std::string& tableName) {
-    if (!isOpen) throw DatabaseException("No database is open");
-    
-    std::stringstream sql;
-    sql << "SELECT * FROM " << tableName;
-    auto rows = executeQuery(sql.str());
-    
     std::vector<std::unique_ptr<DatabaseEntity>> entities;
     
-    // Upcast: создаем Person и приводим к DatabaseEntity через умный указатель
-    for (const auto& row : rows) {
-        auto person = std::make_unique<Person>();
-        if (row.size() > 0) person->setId(std::stoi(row[0]));
-        if (row.size() > 1) person->setFirstName(row[1]);
-        if (row.size() > 2) person->setLastName(row[2]);
-        if (row.size() > 3) person->setEmail(row[3]);
-        if (row.size() > 4) person->setAge(std::stoi(row[4]));
-        if (row.size() > 5) person->setCreatedAt(row[5]);
+    if (tableName == "persons") {
+        auto rows = executeQuery("SELECT id, created_at, first_name, last_name, email, age FROM persons;");
         
-        // Upcast: Person* к DatabaseEntity* (автоматически через unique_ptr)
-        entities.push_back(std::move(person));
+        for (const auto& row : rows) {
+            if (row.size() >= 6) {
+                auto person = std::make_unique<Person>();
+                person->setId(std::stoi(row[0]));
+                person->setCreatedAt(row[1]);
+                person->setFirstName(row[2]);
+                person->setLastName(row[3]);
+                person->setEmail(row[4]);
+                person->setAge(std::stoi(row[5]));
+                entities.push_back(std::move(person));  // upcast: unique_ptr<Person> -> unique_ptr<DatabaseEntity>
+            }
+        }
     }
     
     return entities;
 }
 
 std::unique_ptr<DatabaseEntity> DatabaseManager::getEntityById(int id, const std::string& tableName) {
-    if (!isOpen) throw DatabaseException("No database is open");
-    
     std::stringstream sql;
-    sql << "SELECT * FROM " << tableName << " WHERE id = " << id;
+    sql << "SELECT id, created_at, first_name, last_name, email, age FROM " 
+        << tableName << " WHERE id = " << id << ";";
+    
     auto rows = executeQuery(sql.str());
     
-    if (rows.empty()) return nullptr;
+    if (!rows.empty() && rows[0].size() >= 6) {
+        auto person = std::make_unique<Person>();
+        person->setId(std::stoi(rows[0][0]));
+        person->setCreatedAt(rows[0][1]);
+        person->setFirstName(rows[0][2]);
+        person->setLastName(rows[0][3]);
+        person->setEmail(rows[0][4]);
+        person->setAge(std::stoi(rows[0][5]));
+        return person;  // upcast здесь
+    }
     
-    auto person = std::make_unique<Person>();
-    const auto& row = rows[0];
-    if (row.size() > 0) person->setId(std::stoi(row[0]));
-    if (row.size() > 1) person->setFirstName(row[1]);
-    if (row.size() > 2) person->setLastName(row[2]);
-    if (row.size() > 3) person->setEmail(row[3]);
-    if (row.size() > 4) person->setAge(std::stoi(row[4]));
-    if (row.size() > 5) person->setCreatedAt(row[5]);
-    
-    return person;
+    return nullptr;
 }
 
 std::vector<std::vector<std::string>> DatabaseManager::executeQuery(const std::string& query) {
-    if (!isOpen) throw DatabaseException("No database is open");
+    if (!isOpen) throw DatabaseException("No database opened");
     
+    CallbackData cbData;
+    std::vector<std::string> columns;
     std::vector<std::vector<std::string>> rows;
+    cbData.columns = &columns;
+    cbData.rows = &rows;
+    
     char* errMsg = nullptr;
-    int rc = sqlite3_exec(db, query.c_str(), callback, &rows, &errMsg);
+    int rc = sqlite3_exec(db, query.c_str(), callback, &cbData, &errMsg);
     
     if (rc != SQLITE_OK) {
-        std::string error(errMsg);
+        std::string error = errMsg ? errMsg : "Unknown error";
         sqlite3_free(errMsg);
-        throw DatabaseException("Query error: " + error);
+        throw DatabaseException("Query error: " + error + " | Query: " + query);
     }
     
     return rows;

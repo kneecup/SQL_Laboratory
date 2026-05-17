@@ -1,50 +1,42 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 project(DatabaseGUI)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Пути
-set(WXWIDGETS_DIR "C:/wxWidgets")
-set(WXWIDGETS_LIB_DIR "${WXWIDGETS_DIR}/lib/gcc810_x64_dll")
-set(WXWIDGETS_SETUP_DIR "${WXWIDGETS_LIB_DIR}/mswu")
-set(SQLITE3_DIR "C:/SQLite")
+# Поиск wxWidgets
+find_package(wxWidgets REQUIRED COMPONENTS core base)
+include(${wxWidgets_USE_FILE})
 
-# Заголовочные файлы
-include_directories(
-    include
-    ${WXWIDGETS_SETUP_DIR}
-    ${WXWIDGETS_DIR}/include
-    ${SQLITE3_DIR}
-)
+# SQLite3 (обычно уже есть в системе)
+find_package(SQLite3 REQUIRED)
 
 # Исходные файлы
-file(GLOB SOURCES "src/*.cpp")
-list(APPEND SOURCES "${SQLITE3_DIR}/sqlite3.c")
-
-# Создание исполняемого файла
-add_executable(DatabaseGUI ${SOURCES})
-
-# КЛЮЧЕВОЙ МОМЕНТ: Определения для wxWidgets
-target_compile_definitions(DatabaseGUI PRIVATE
-    __WXMSW__
-    __GNUWIN32__
-    _UNICODE
-    WXUSINGDLL          # <-- Этот флаг критически важен!
+set(SOURCES
+    src/App.cpp
+    src/MainFrame.cpp
+    src/DatabaseEntity.cpp
+    src/DatabaseManager.cpp
+    src/Person.cpp
 )
 
-# Линковка библиотек
-target_link_libraries(DatabaseGUI
-    ${WXWIDGETS_LIB_DIR}/libwxbase32u.a
-    ${WXWIDGETS_LIB_DIR}/libwxmsw32u_core.a
+# Заголовочные файлы
+set(HEADERS
+    include/App.h
+    include/MainFrame.h
+    include/DatabaseEntity.h
+    include/DatabaseManager.h
+    include/Person.h
 )
 
-# Копирование DLL
-add_custom_command(TARGET DatabaseGUI POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${WXWIDGETS_LIB_DIR}/wxbase32u_gcc810.dll
-        ${CMAKE_CURRENT_BINARY_DIR}/
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${WXWIDGETS_LIB_DIR}/wxmsw32u_core_gcc810.dll
-        ${CMAKE_CURRENT_BINARY_DIR}/
+# Исполняемый файл
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+# Подключаем заголовочные файлы
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+
+# Линкуем библиотеки
+target_link_libraries(${PROJECT_NAME} 
+    ${wxWidgets_LIBRARIES}
+    SQLite::SQLite3
 )
