@@ -8,8 +8,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(wxWidgets REQUIRED COMPONENTS core base)
 include(${wxWidgets_USE_FILE})
 
-# SQLite3 (обычно уже есть в системе)
+# Поиск SQLite3 (явно указываем цель, если стандартный модуль не находит)
 find_package(SQLite3 REQUIRED)
+if(NOT TARGET SQLite::SQLite3)
+    # Создаём цель для линковки, если она не создалась автоматически
+    add_library(SQLite::SQLite3 UNKNOWN IMPORTED)
+    set_target_properties(SQLite::SQLite3 PROPERTIES
+        IMPORTED_LOCATION "${SQLITE3_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${SQLITE3_INCLUDE_DIR}"
+    )
+endif()
 
 # Исходные файлы
 set(SOURCES
@@ -20,7 +28,7 @@ set(SOURCES
     src/Person.cpp
 )
 
-# Заголовочные файлы
+# Заголовочные файлы (помогают IDE)
 set(HEADERS
     include/App.h
     include/MainFrame.h
@@ -29,7 +37,7 @@ set(HEADERS
     include/Person.h
 )
 
-# Исполняемый файл
+# Создаём исполняемый файл
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 # Подключаем заголовочные файлы
