@@ -2,16 +2,16 @@
 #include <wx/wx.h>
 #include <wx/listctrl.h>
 #include <wx/gbsizer.h>
+#include <wx/combobox.h>
 #include <memory>
 #include "DatabaseManager.h"
 #include "Person.h"
 
 class MainFrame : public wxFrame {
 private:
-    // Умный указатель на менеджер базы данных
     std::unique_ptr<DatabaseManager> dbManager;
     
-    // GUI элементы (wxWidgets сам управляет их памятью, поэтому raw-указатели допустимы)
+    // GUI элементы
     wxListView* listView;
     wxTextCtrl* txtFirstName;
     wxTextCtrl* txtLastName;
@@ -22,6 +22,11 @@ private:
     wxButton* btnDelete;
     wxButton* btnRefresh;
     wxStaticText* lblStatus;
+    
+    // Элементы сортировки (НОВЫЕ)
+    wxComboBox* cmbSortField;
+    wxButton* btnSortAsc;
+    wxButton* btnSortDesc;
     
     int currentSelectedId;
     
@@ -35,8 +40,13 @@ private:
     void OnSelectPerson(wxListEvent& event);
     void OnClearForm(wxCommandEvent& event);
     
+    // Новые обработчики сортировки
+    void OnSortAscending(wxCommandEvent& event);
+    void OnSortDescending(wxCommandEvent& event);
+    
     // Вспомогательные методы
     void LoadDataToList();
+    void LoadSortedData(const std::string& sortField, bool ascending);
     void ClearForm();
     void UpdateStatus(const wxString& message);
     void ShowError(const wxString& message);
